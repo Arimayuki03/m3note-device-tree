@@ -32,9 +32,6 @@ device running Flyme 8.0.0.0A.
 `kernel` · `linux` · `docker` · `magisk` · `arm64` · `mediatek` · `custom-kernel` ·
 `chroot`
 
-> Suggested GitHub repository topics are listed above; copy them into the repository's
-> **About → Topics** field.
-
 ---
 
 ### 📖 Overview

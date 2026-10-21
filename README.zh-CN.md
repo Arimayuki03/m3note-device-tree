@@ -31,8 +31,6 @@
 `kernel` · `linux` · `docker` · `magisk` · `arm64` · `mediatek` · `custom-kernel` ·
 `chroot`
 
-> 上面的 Topics 可复制到 GitHub 仓库的 **About → Topics**。
-
 ---
 
 ### 📖 项目简介
