@@ -15,7 +15,7 @@
 #   speaker audio : aw8738 external-PA driver
 #   light/proximity: ltr579 driver + alsps framework registration
 #
-# Usage:  bash <PROJECT_ROOT>/project/kernel/build_fix31.sh
+# Usage:  bash <PROJECT_ROOT>/kernel/scripts/build_fix31.sh
 set -eu
 
 cd <BUILD_ROOT>/k318/android_kernel_m3note-master
@@ -54,8 +54,8 @@ grep -q '^# CONFIG_MTK_IRTX_SUPPORT is not set' .config || fail "IRTX re-enabled
 make KBUILD_BUILD_VERSION=31 -o tools/dct/DrvGen ARCH=arm64 CROSS_COMPILE="$CROSS" \
 	HOSTCFLAGS=-fcommon CC="${CROSS}gcc $INC" -j20 Image.gz > "$LOGDIR/build31.log" 2>&1
 
-cp arch/arm64/boot/Image.gz <PROJECT_ROOT>/project/kernel/Image.gz-fix31
-cp .config <PROJECT_ROOT>/project/kernel/kernel-config-fix31
+cp arch/arm64/boot/Image.gz <PROJECT_ROOT>/kernel/Image.gz-fix31
+cp .config <PROJECT_ROOT>/kernel/kernel-config-fix31
 
 echo "PREFLIGHT_OK"
 grep '^CONFIG_DEFAULT_IOSCHED' .config

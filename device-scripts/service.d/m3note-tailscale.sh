@@ -44,7 +44,7 @@
 # path, and match the mark without requiring the mask suffix.
 #
 # Install (PC; the device-side step runs as root):
-#   adb push project/kernel/m3note-tailscale-fixed.sh /data/local/tmp/
+#   adb push device-scripts/service.d/m3note-tailscale.sh /data/local/tmp/m3note-tailscale-fixed.sh
 #   adb shell "su -c 'cp /data/local/tmp/m3note-tailscale-fixed.sh /sbin/.core/img/.core/service.d/m3note-tailscale.sh; chmod 755 /sbin/.core/img/.core/service.d/m3note-tailscale.sh'"
 #   adb shell "su -c 'mv -f /sbin/.core/img/.core/service.d/m3note-tailscale.sh.bak /data/local/tmp/m3note-tailscale.sh.bak.old'"
 

@@ -6,6 +6,6 @@ CROSS=<BUILD_ROOT>/toolchain/bin/aarch64-linux-android-
 INC="-I$PWD/drivers/misc/mediatek/mu3phy $(find "$PWD/drivers" -type d -name mt6755 | grep -v ppm_v2 | sed 's|^|-I|' | tr '\n' ' ')"
 make ARCH=arm64 CROSS_COMPILE="$CROSS" olddefconfig > <BUILD_ROOT>/fix-20261015/olddef27.log 2>&1
 make KBUILD_BUILD_VERSION=27 -o tools/dct/DrvGen ARCH=arm64 CROSS_COMPILE="$CROSS" HOSTCFLAGS=-fcommon CC="${CROSS}gcc $INC" -j20 Image.gz > <BUILD_ROOT>/fix-20261015/build27.log 2>&1
-cp arch/arm64/boot/Image.gz <PROJECT_ROOT>/project/kernel/Image.gz-fix27
-cp .config <PROJECT_ROOT>/project/kernel/kernel-config-fix27
+cp arch/arm64/boot/Image.gz <PROJECT_ROOT>/kernel/Image.gz-fix27
+cp .config <PROJECT_ROOT>/kernel/kernel-config-fix27
 echo BUILD27_DONE

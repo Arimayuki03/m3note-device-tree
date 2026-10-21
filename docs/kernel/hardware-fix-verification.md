@@ -27,7 +27,7 @@
 
 ## 测试镜像
 
-原备份：`project/m3note-backup/boot-before-fix10.img`，SHA256 `85e2f8f0fd7339b833f34b1290b8f9b7dafdcb48cfbf9c763bb74bd09150431f`。
+原备份：`<ARTIFACTS>/boot-before-fix10.img`，SHA256 `85e2f8f0fd7339b833f34b1290b8f9b7dafdcb48cfbf9c763bb74bd09150431f`。
 
 #15：`boot-fix15-test.img`，SHA256 `ad896b04c695197d03f0652d667d24571676b4f3c04054e1500b92c270fe76cb`。
 

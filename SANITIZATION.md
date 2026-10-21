@@ -34,7 +34,7 @@ Wi-Fi SSID 等标识未写入文档。
 
 - `*.img`、`*.bin`、`*.zip`、`*.tar.gz`、`*.apk`、`*.msi`、`*.7z`
 - `project/m3note_key`、`m3note_key.pub`、`authorized_keys`
-- `project/m3note-backup/` 中的分区备份和 boot 镜像
+- `<ARTIFACTS>/` 中的分区备份和 boot 镜像
 - `project/astrbot/`（含登录信息、初始密码、运行日志）
 - `project/dsha-install/`（含本地签名密钥、口令和第三方 APK）
 - `project/dsh-ubuntu20/`（第三方运行时、凭据和日志）

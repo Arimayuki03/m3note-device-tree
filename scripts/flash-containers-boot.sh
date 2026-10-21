@@ -21,8 +21,8 @@
 #
 # If the phone fails to boot after the swap (bootloop):
 #   hold Vol+ (and/or Power) to reach fastboot, then on the PC:
-#       fastboot boot "<PROJECT_ROOT>/project/twrp.img"
-#       adb push "<PROJECT_ROOT>/project/m3note-backup/boot-magisk.img" /tmp/boot-rollback.img
+#       fastboot boot "<ARTIFACTS>/twrp.img"
+#       adb push "<ARTIFACTS>/m3note-backup/boot-magisk.img" /tmp/boot-rollback.img
 #       adb shell "dd if=/tmp/boot-rollback.img of=/dev/block/platform/mtk-msdc.0/11230000.msdc0/by-name/boot bs=4096; sync"
 #       adb reboot
 #
@@ -38,7 +38,7 @@ FB="$ADB_DIR/fastboot.exe"
 [ -x "$FB" ]  || FB=fastboot
 
 # <PROJECT_ROOT>\project is the canonical, durable location for all artifacts
-PROJ="<PROJECT_ROOT>/project"
+PROJ="<PROJECT_ROOT>"
 NEW_IMG="$PROJ/m3note-backup/boot-containers.img"
 ROLLBACK_IMG="$PROJ/m3note-backup/boot-magisk.img"
 
@@ -166,6 +166,6 @@ Expected in the output above:
   * /proc/cgroups lists memory, devices, freezer, cpu, cpuacct, blkio
   * /proc/self/ns/ contains mnt net ipc uts pid user
   * overlayfs appears in /proc/filesystems
-Next: rebuild the Linux chroot (project/sources/ + project/m3note-linux-server.md),
+Next: rebuild the Linux chroot (sources/ + docs/linux-chroot.md),
 then install docker.io and run a real container.
 EOT

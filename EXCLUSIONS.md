@@ -35,7 +35,7 @@
 
 | 项目 | 处理 |
 |---|---|
-| `project/m3note-backup/*.img`（boot、lk、secro、frp、proinfo、devinfo、persist、userdata 等） | 不发布 |
+| `<ARTIFACTS>/*.img`（boot、lk、secro、frp、proinfo、devinfo、persist、userdata 等） | 不发布 |
 | `extracted/*.img`、`*.bin`、`update.zip`、官方 Flyme 固件包 | 不发布 |
 | 设备日志、dmesg、截图、应用数据、QQ/聊天数据 | 不发布 |
 | benchmark、资源审计、迁移验证的原始日志/JSON/截图 | 不发布 |

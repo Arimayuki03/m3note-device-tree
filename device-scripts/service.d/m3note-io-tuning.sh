@@ -28,7 +28,7 @@
 #     or write cfq / 512 by hand.
 #
 # Install:
-#   adb push project/kernel/m3note-io-tuning.sh /data/local/tmp/
+#   adb push device-scripts/service.d/m3note-io-tuning.sh /data/local/tmp/
 #   adb shell "su -c 'cp /data/local/tmp/m3note-io-tuning.sh /sbin/.core/img/.core/service.d/; chmod 755 /sbin/.core/img/.core/service.d/m3note-io-tuning.sh'"
 
 TAG=/data/local/tmp/m3note-io.log

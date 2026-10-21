@@ -17,13 +17,13 @@
 
 已编译、打包 #11：修正两路映射；每次 HWEN 后重写两路电流，避免关闭后重新开启时芯片复位使另一通道电流丢失；保持两路使能位按各自状态合并。尚待临时启动验证及读取新系统默认档位。
 
-#11 测试镜像：project/m3note-backup/boot-fix11-test.img，SHA256 92998297f729911bd7dd82551ada5429a25a81d26106e68147e178c71ff1de4f。
+#11 测试镜像：<ARTIFACTS>/boot-fix11-test.img，SHA256 92998297f729911bd7dd82551ada5429a25a81d26106e68147e178c71ff1de4f。
 
 用户进一步说明原来是两颗 LED 同亮的暖白光，新系统没有找到调色入口。在用户从系统快捷开关开启手电筒后，实际读取到 flash1=5、flash2=-1，证明新系统默认只启用第一路。#11 仅修正映射，尚未临时启动；后续直接构建 #12，默认将单独冷白请求混入同档位暖黄通道，恢复用户原来的暖白输出。新增 warm_white 布尔参数，默认开启；关闭该参数后，flash1/flash2 可分别控制原始冷暖通道。两路都为负值时仍关闭全部 LED。
 
 #12 已编译、打包、临时启动成功；sys.boot_completed=1，disppwm_sel enable_count=1，触点释放后 pointerCount=0，压力轴可用，1-0063 绑定 m3note-torch，crash buffer 暂无新崩溃。warm_white 参数读取为 Y。
 
-#12 测试镜像：project/m3note-backup/boot-fix12-test.img，SHA256 2d4cd9bfca5ce7bb6eedf268306b976fea5c217f4ba4859beffd923ed9f40ec9。
+#12 测试镜像：<ARTIFACTS>/boot-fix12-test.img，SHA256 2d4cd9bfca5ce7bb6eedf268306b976fea5c217f4ba4859beffd923ed9f40ec9。
 
 独立控制说明：默认暖白混光针对新系统仅请求 flash1 的快捷开关。需要独立设置冷暖比例时，先关闭手电筒，再以 root 将 /sys/module/m3note_torch_compat/parameters/warm_white 写入 N，随后 flash1 控制冷白、flash2 控制暖黄，各 -1 关闭、0..5 调档。这个设置在重启后恢复默认，不意味着新系统有内置的调色界面。
 
@@ -45,7 +45,7 @@
 - 原文件备份：WSL <BUILD_ROOT>/fix-20261015
 - 修改：GT1151/gt1x_tpd.c、aal20/ddp_pwm.c、mt6755/kd_flashlightlist.c、mt6755/Makefile；新增 m3note_torch_compat.c
 - 编译：build_fix10.sh，结果成功；build-fix10.log 留存。日志中的原有编译器警告不影响生成。
-- 镜像：project/m3note-backup/boot-fix10-test.img，16 MiB
+- 镜像：<ARTIFACTS>/boot-fix10-test.img，16 MiB
 - 打包：pack_fix10.py；原机 header、DTB、Magisk ramdisk 与余下区域逐字节不变，只替换固定布局的内核压缩段
 - 系统：临时镜像成功启动，uname=#10、sys.boot_completed=1
 - 触摸：增加压力轴；空闲 pointerCount=0
@@ -55,7 +55,7 @@
 
 ## 镜像校验
 
-原启动分区只读备份：project/m3note-backup/boot-before-fix10.img
+原启动分区只读备份：<ARTIFACTS>/boot-before-fix10.img
 
 SHA256：85e2f8f0fd7339b833f34b1290b8f9b7dafdcb48cfbf9c763bb74bd09150431f
 

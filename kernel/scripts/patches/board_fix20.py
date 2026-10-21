@@ -43,7 +43,7 @@ p=root/'.config'
 shutil.copy2(p,backup/'kernel.config')
 s=p.read_text().replace('CONFIG_MTK_AKM09911_NEW=y','# CONFIG_MTK_AKM09911_NEW is not set').replace('# CONFIG_MTK_ST480 is not set','CONFIG_MTK_ST480=y')
 p.write_text(s)
-local=Path('<PROJECT_ROOT>/project/kernel')
+local=Path('<PROJECT_ROOT>/kernel')
 for old,new in [('build_fix19.sh','build_fix20.sh'),('pack_fix19.py','pack_fix20.py')]:
     data=(local/old).read_text().replace('VERSION=19','VERSION=20').replace('fix19','fix20').replace('build19','build20')
     (local/new).write_text(data)

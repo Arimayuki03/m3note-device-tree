@@ -122,4 +122,4 @@ java.lang.ArrayIndexOutOfBoundsException: length=2; index=2
 - 手电筒 ❌（修复方案见一）；亮度 ❌（修复方案见二）；搜索 App ❌（非内核）
 
 ---
-*记录：ZCode · 2026-10-15 01:00*
+*记录：2026-10-15 01:00*

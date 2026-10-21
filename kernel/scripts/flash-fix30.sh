@@ -32,8 +32,8 @@ ADB_DIR="/c/Users/<USER>/AppData/Local/Microsoft/WinGet/Packages/Google.Platform
 ADB="$ADB_DIR/adb.exe"
 [ -x "$ADB" ] || ADB=adb
 
-PROJ="<PROJECT_ROOT>/project"        # git-bash form, for local tools (md5sum, test)
-PROJ_W="<PROJECT_ROOT>/project"      # windows form, for adb.exe (MSYS_NO_PATHCONV=1)
+PROJ="<PROJECT_ROOT>"        # git-bash form, for local tools (md5sum, test)
+PROJ_W="<PROJECT_ROOT>"      # windows form, for adb.exe (MSYS_NO_PATHCONV=1)
 NEW_IMG="$PROJ/m3note-backup/boot-fix30-test.img"
 BASE_IMG="$PROJ/m3note-backup/boot-fix22-test.img"
 NEW_IMG_W="$PROJ_W/m3note-backup/boot-fix30-test.img"

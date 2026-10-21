@@ -45,7 +45,7 @@ deadline 的价值只剩"混合读写时给读请求延迟预算"这一**原理�
   `/data/*.sh`、vold（只引用 zram0/disksize）、toybox 之外引用 `/sys/block/` 的二进制
   （debuggerd/dumpstate/ntfs-3g/updater/aee_dumpstate/superumount… 均无相关字符串）。
   **作者未定位**；因为它在用户态且早于 adb，内核侧任何默认值/`elevator=` 都会被它覆盖。
-- **⇒ 让 mmcblk0 真正生效只能靠"开机后再写一次"**。现成脚本 `project/kernel/m3note-io-tuning.sh`
+- **⇒ 让 mmcblk0 真正生效只能靠"开机后再写一次"**。现成脚本 `device-scripts/service.d/m3note-io-tuning.sh`
   已装进 `service.d`（含立即 + boot_completed 后两次写），**已开机自动生效**（见下方补记）。
 
 ## 四、⚠ 重要发现：启动分区写保护的真实规律
@@ -56,7 +56,7 @@ deadline 的价值只剩"混合读写时给读请求延迟预算"这一**原理�
 > 当设备是从启动分区本身启动时，写入被静默丢弃（读回仍是旧内容）。**
 
 - 这解释了此前记录里的"写保护"现象（当时设备是正常从分区启动的）。
-- 刷写流程据此固化在 `project/kernel/flash-boot.sh`：① 校验当前分区内容属于已知良好镜像 →
+- 刷写流程据此固化在 `kernel/scripts/flash-boot.sh`：① 校验当前分区内容属于已知良好镜像 →
   ② **先把现场 dump 成回滚镜像** → ③ dd 写入 → ④ **回读比对（先 drop_caches，避免页缓存导致误判）** →
   ⑤ 不一致则自动回滚 → ⑥ 重启确认版本号。
   （`adb pull` 以 shell 身份运行，root 独占的 dump 文件需先 `chmod 644`；设备 `dd` 不吃 `1M`，用 `bs=4096`；
@@ -69,7 +69,7 @@ deadline 的价值只剩"混合读写时给读请求延迟预算"这一**原理�
   原 xml 备份在 `/data/system/users/0/wallpaper_info.xml.bak-t1`。
 - **动画**：`settings put global {window,transition,animator}_animation_scale 1.0`
 - **I/O**：重启即自动恢复成 Flyme 的 cfq+512；也可手动 `echo cfq|deadline`、`echo 512|1024`
-- **内核**：`bash project/kernel/flash-boot.sh project/m3note-backup/boot-fix30-test.img`
+- **内核**：`bash kernel/scripts/flash-boot.sh <ARTIFACTS>/boot-fix30-test.img`
   （记得先 `fastboot boot` 一个已知良好镜像，否则写入不生效）
 - 四项修复（外放/光感/接近/上键）在多次重启后**均已复查正常**：`/dev/aw8738`、`/dev/m_alsps_misc` 存在、
   GPIO104 `11101010`、`als` 有读数。
@@ -77,7 +77,7 @@ deadline 的价值只剩"混合读写时给读请求延迟预算"这一**原理�
 ## 六、测量方法备注（避免误读）
 
 - 优化前的数字来自 `dumpsys cpuinfo` 的**开机窗口**（含启动负载），优化后的数字来自自写采样脚本
-  （`project/kernel/idle-cpu-sample.sh`，按 `/proc/stat` 与 `/proc/<pid>/stat` 的 60s 增量计算），
+  （`<ARTIFACTS>/idle-cpu-sample.sh`，按 `/proc/stat` 与 `/proc/<pid>/stat` 的 60s 增量计算），
   两者**不是严格同条件对照**。但"动态壁纸进程数 0"是结构性变化。
 - 跨时段比较会骗人：同一配置（cfq+512）上午测到中位 233、傍晚刚开机时测到 ~207、稳定后测到 245。
   **只认同一次会话内的 A/B**（第二节的表就是这么做的）。

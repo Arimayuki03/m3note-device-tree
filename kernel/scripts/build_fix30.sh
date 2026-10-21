@@ -10,7 +10,7 @@
 #      and never reports to m_alsps_input (so the Android light/proximity
 #      sensors produced no events, and the AAL logged "aal:get_data not exsit").
 #
-# Usage:  bash <PROJECT_ROOT>/project/kernel/build_fix30.sh
+# Usage:  bash <PROJECT_ROOT>/kernel/scripts/build_fix30.sh
 set -eu
 
 cd <BUILD_ROOT>/k318/android_kernel_m3note-master
@@ -46,8 +46,8 @@ grep -q '^# CONFIG_MTK_IRTX_SUPPORT is not set' .config || fail "IRTX re-enabled
 make KBUILD_BUILD_VERSION=30 -o tools/dct/DrvGen ARCH=arm64 CROSS_COMPILE="$CROSS" \
 	HOSTCFLAGS=-fcommon CC="${CROSS}gcc $INC" -j20 Image.gz > "$LOGDIR/build30.log" 2>&1
 
-cp arch/arm64/boot/Image.gz <PROJECT_ROOT>/project/kernel/Image.gz-fix30
-cp .config <PROJECT_ROOT>/project/kernel/kernel-config-fix30
+cp arch/arm64/boot/Image.gz <PROJECT_ROOT>/kernel/Image.gz-fix30
+cp .config <PROJECT_ROOT>/kernel/kernel-config-fix30
 
 echo "PREFLIGHT_OK"
 echo BUILD30_DONE

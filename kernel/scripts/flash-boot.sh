@@ -16,7 +16,7 @@
 #
 # Usage:  bash flash-boot.sh <path-to-new-image> [--no-reboot]
 # Rollback afterwards:  point the script at any known-good image, e.g.
-#         bash flash-boot.sh project/m3note-backup/boot-fix30-test.img
+#         bash kernel/scripts/flash-boot.sh <ARTIFACTS>/boot-fix30-test.img
 #
 #   * the device's sha256sum is absent -> md5sum is used (present)
 #   * the device's dd rejects "1M" -> block size is given in bytes
@@ -29,8 +29,8 @@ ADB_DIR="/c/Users/<USER>/AppData/Local/Microsoft/WinGet/Packages/Google.Platform
 ADB="$ADB_DIR/adb.exe"
 [ -x "$ADB" ] || ADB=adb
 
-PROJ="<PROJECT_ROOT>/project"          # git-bash form for local tools
-PROJ_W="<PROJECT_ROOT>/project"        # windows form for adb.exe
+PROJ="<PROJECT_ROOT>"          # git-bash form for local tools
+PROJ_W="<PROJECT_ROOT>"        # windows form for adb.exe
 BACKUP="$PROJ/m3note-backup"
 BACKUP_W="$PROJ_W/m3note-backup"
 
@@ -43,7 +43,7 @@ NO_REBOOT="${2:-}"
 case "$NEW_IMG_IN" in
   /*|[A-Za-z]:*) NEW_IMG="$NEW_IMG_IN"; NEW_IMG_W="$NEW_IMG_IN" ;;
   *)            NEW_IMG="$(cd "$(dirname "$NEW_IMG_IN")" && pwd)/$(basename "$NEW_IMG_IN")"
-                NEW_IMG_W="$PROJ_W/${NEW_IMG_IN#*/project/}" ;;
+                NEW_IMG_W="$NEW_IMG" ;;
 esac
 # normalise to the windows form adb needs
 NEW_IMG_W="$(printf '%s' "$NEW_IMG" | sed 's#^/d/#D:/#')"

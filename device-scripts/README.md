@@ -38,7 +38,7 @@ device-scripts-2026-10-15/
 
 **关键约束**：Magisk v16.3 串行执行并以 `waitpid` 等待每个脚本退出——
 **任何不退出脚本都会堵死整条链**（rev2 tailscale 曾把 io-tuning 堵到永不执行，
-详见 `project/kernel/service.d串行阻塞修复-2026-10-15.md`）。
+详见 `docs/kernel/service-d-blocking.md`）。
 以后新增脚本必须快速退出；长期运行的东西用 `setsid … &` 派生。
 
 ## post-fs-data.d
@@ -82,8 +82,8 @@ adb push <本目录>/tmp/m3note-tailscale.rev2.sh /data/local/tmp/
 adb shell "su -c 'cp /data/local/tmp/m3note-tailscale.rev2.sh /sbin/.core/img/.core/service.d/m3note-tailscale.sh; chmod 755 /sbin/.core/img/.core/service.d/m3note-tailscale.sh'"
 ```
 
-> 内核镜像备份不在本目录：见 `project/m3note-backup/boot-fix32-test.img`
+> 内核镜像备份不在本目录：见 `<ARTIFACTS>/boot-fix32-test.img`
 > （md5 `712e4e65b0ba1f36f005f03e817d8743`，= 当时启动分区内容；当前运行内核为 #3307）。
 
 ---
-*备份：ZCode · 2026-10-15 20:5x*
+*备份：2026-10-15 20:5x*

@@ -34,15 +34,15 @@
 
 构建编号 **#28**（#27 已被光线/接近传感器版本占用，勿混用）。
 
-- **`project/kernel/build_fix28.sh`**（已写好）：
+- **`kernel/scripts/build_fix28.sh`**（已包含）：
   1. `sed` 关闭 `CONFIG_MTK_IRTX_SUPPORT` → `olddefconfig` → **双重校验**（关掉失败或被重新打开则中止）；
   2. 与历次一致的工具链/INC 编译 `KBUILD_BUILD_VERSION=28`；
   3. 产出 `Image.gz-fix28` + `kernel-config-fix28`，日志在 `<BUILD_ROOT>/fix-20261015/build28.log`。
-  运行方式（WSL）：`bash <PROJECT_ROOT>/project/kernel/build_fix28.sh`
-- **`project/kernel/pack_fix28.py`**（已写好）：沿用 #25→#26 打包逻辑（原 header、Magisk ramdisk、内嵌 DTB 逐字节不动，仅替换内核段）；base 自动优先取 `boot-fix27-test.img`，否则回退 `boot-fix22-test.img`；输出 `boot-fix28-test.img` 并打印 SHA256。
-  运行方式：在 `<PROJECT_ROOT>` 目录下 `python3 project/kernel/pack_fix28.py`
+  运行方式（WSL）：`bash <PROJECT_ROOT>/kernel/scripts/build_fix28.sh`
+- **`project/kernel/pack_fix28.py`**（原始工作目录中，未随仓库发布）：沿用 #25→#26 打包逻辑（原 header、Magisk ramdisk、内嵌 DTB 逐字节不动，仅替换内核段）；base 自动优先取 `boot-fix27-test.img`，否则回退 `boot-fix22-test.img`；输出 `boot-fix28-test.img` 并打印 SHA256。
+  运行方式：在 `<PROJECT_ROOT>` 目录下 `python3 <ARTIFACTS>/pack_fix28.py`
 
-**执行前置条件**：确认主对话的 #27 构建/测试已结束、树空闲（无 `make` 在跑），再运行以上脚本。
+**执行前置条件**：确认主构建线的 #27 构建/测试已结束、树空闲（无 `make` 在跑），再运行以上脚本。
 
 ## 三、验证与固化流程
 
@@ -55,16 +55,16 @@
 ## 四、备选方案（不动内核）
 
 - 开机后把 GPIO104 写回键盘模式的 Magisk `service.d` 小脚本（`echo -wmode 104 1` 等 4 条 sysfs 写；重启自动应用、随时删）。
-- 若 #28 后上键仍无反应：复查 104 是否恢复 MODE1；若已恢复仍无效，再对比 LK 阶段配置（用 KP_MEM 寄存器快照继续定位，工具链已在侧对话验证可用）。
+- 若 #28 后上键仍无反应：复查 104 是否恢复 MODE1；若已恢复仍无效，再对比 LK 阶段配置（用 KP_MEM 寄存器快照继续定位，工具链已在并行调试中验证可用）。
 
 ## 五、现场档案
 
-- PC 证据存档：`project/kernel/volume-key-evidence/`（kmsg 驱动打印 / evdev 事件 / 中断记账 / 基线）。
+- PC 证据存档：`<ARTIFACTS>/volume-key-evidence/`（kmsg 驱动打印 / evdev 事件 / 中断记账 / 基线）。
 - 设备侧残留（可留可删）：`/sdcard/volkey-evidence/`、`/sdcard/volkey_all*.log`、`/sdcard/kmsg_capture.log`。
 - 本方案配套：`build_fix28.sh`、`pack_fix28.py`（同目录）。
 
 ---
-*记录：2026-10-15 08:5x · 侧对话整理 · 执行前请确认构建树空闲，避免与 #27 流程并行冲突*
+*记录：2026-10-15 08:5x · 并行调试整理 · 执行前请确认构建树空闲，避免与 #27 流程并行冲突*
 
 ---
 
@@ -86,7 +86,7 @@
   **确实收到了按键**；GPIO104 保持 `11101010`（MODE1 + 上拉）不再被改回普通 GPIO。
 - **固化（写启动分区）已完成 ✅**（2026-10-15 16:5x）：按既有流程「基线哈希核对 → dd 写入 → 整分区回读校验 → 重启确认」执行，
   写入 `boot-fix30-test.img`（md5 `171769c9f101f8f0cc59207cfc13285b`），回读一致、重启后内核为 `#30`，
-  当前启动分区内容即该镜像；脚本见 `project/kernel/flash-fix30.sh`（支持 `--rollback` 回退到 #22）。
+  当前启动分区内容即该镜像；脚本见 `kernel/scripts/flash-fix30.sh`（支持 `--rollback` 回退到 #22）。
   注：本次未遇到写保护问题，写入一次即生效。
 - 另：本文档第一节关于 i2c 的"波及"判断已被新证据纠正，详见
   《i2c总线真相与传感器地址纠正-2026-10-15.md》——上键失效**只**由 IRTX 占用 GPIO104 引起。

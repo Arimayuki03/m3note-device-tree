@@ -87,7 +87,7 @@ struct i2c_msg {                    /* 内核态：24 字节 */
 
 并且整轮探测后 `dmesg | grep -c "Adapter is busy"` = **0**，说明**没有再踩挂适配器**。
 
-> 工具与源码：`project/kernel/i2c_probe3.c`（24 字节布局，freestanding 静态编译，随包提供）、
+> 工具与源码：`project/kernel/i2c_probe3.c`（24 字节布局，freestanding 静态编译；原始工作目录中，未随仓库发布）、
 > `project/kernel/i2c_probe_nostdlib.c` / `i2c_probe2.c`（16 字节布局，用于复现问题）。
 > 编译方式见第七节。
 
@@ -202,7 +202,7 @@ struct i2c_msg {                    /* 内核态：24 字节 */
 
 ```
 # 编译（WSL）
-cd <PROJECT_ROOT>/project/kernel
+cd <PROJECT_ROOT>/kernel
 <BUILD_ROOT>/toolchain/bin/aarch64-linux-android-gcc \
   -static -nostdlib -O2 -fno-stack-protector -ffreestanding \
   -o i2c_probe3 i2c_probe3.c i2c_probe_start.S -lgcc
@@ -225,10 +225,10 @@ i2c_probe3 scan 1
 
 - 设备当前：`#28`（RAM 启动）运行中；**启动分区未改动**，重启即回 #22。
 - 新增/更新文件：
-  - `project/kernel/build_fix28.sh`（只含音量上键修复 + i2c 未改动断言）
+  - `kernel/scripts/build_fix28.sh`（只含音量上键修复 + i2c 未改动断言）
   - `project/kernel/pack_fix28.py`（未变）
   - `project/kernel/Image.gz-fix28` / `kernel-config-fix28`
-  - `project/m3note-backup/boot-fix28-test.img`（SHA256 见第二节）
+  - `<ARTIFACTS>/boot-fix28-test.img`（SHA256 见第二节）
   - `project/kernel/i2c_probe3.c` + `i2c_probe3`（正确布局工具）
   - `project/kernel/i2c_probe_nostdlib.c` / `i2c_probe2.c` / `i2c_probe_start.S`（复现用）
   - `project/kernel/last_kmsg-fix28-attempt.txt`（失败实验的 panic 现场）
@@ -236,4 +236,4 @@ i2c_probe3 scan 1
   - `project/kernel/i2c-verification-fix28-2026-10-15.txt`（#28 复核记录）
 
 ---
-*记录：ZCode · 2026-10-15 10:2x · 内核树现处于"仅音量上键修复"状态，可安全继续构建*
+*记录：2026-10-15 10:2x · 内核树现处于"仅音量上键修复"状态，可安全继续构建*

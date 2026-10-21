@@ -8,7 +8,7 @@
 #   3. light/proximity: new ltr579 alsps driver (the chip actually fitted is an
 #                       LTR-579 at i2c-1 0x53; the tree only had the PA122 driver)
 #
-# Usage:  bash <PROJECT_ROOT>/project/kernel/build_fix29.sh
+# Usage:  bash <PROJECT_ROOT>/kernel/scripts/build_fix29.sh
 set -eu
 
 cd <BUILD_ROOT>/k318/android_kernel_m3note-master
@@ -42,8 +42,8 @@ grep -q '^# CONFIG_MTK_IRTX_SUPPORT is not set' .config || fail "IRTX re-enabled
 make KBUILD_BUILD_VERSION=29 -o tools/dct/DrvGen ARCH=arm64 CROSS_COMPILE="$CROSS" \
 	HOSTCFLAGS=-fcommon CC="${CROSS}gcc $INC" -j20 Image.gz > "$LOGDIR/build29.log" 2>&1
 
-cp arch/arm64/boot/Image.gz <PROJECT_ROOT>/project/kernel/Image.gz-fix29
-cp .config <PROJECT_ROOT>/project/kernel/kernel-config-fix29
+cp arch/arm64/boot/Image.gz <PROJECT_ROOT>/kernel/Image.gz-fix29
+cp .config <PROJECT_ROOT>/kernel/kernel-config-fix29
 
 echo "PREFLIGHT_OK"
 echo BUILD29_DONE

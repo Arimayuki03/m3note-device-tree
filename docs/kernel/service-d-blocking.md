@@ -54,7 +54,7 @@ while :; do ... sleep 30; done
 | 目录顺序 | `docker-server → zram → performance → tailscale.sh → tailscale.sh.bak → io-tuning.sh`（io 排最后） |
 | 顺带解释 | `m3note-model.sh` 里"Magisk 执行 post-fs-data.d 可靠，而 service.d 目录不会被启动"的旧注释其实不对——service.d **启动了**，只是**被卡住**了 |
 
-**规则（写给未来的自己）**：本机所有 service.d 脚本**必须快速退出**；
+**规则（维护约定）**：本机所有 service.d 脚本**必须快速退出**；
 任何长期运行的东西必须 `setsid … &` 派生出去（docker-server 是慢脚本里唯一的例外：它 ~57 秒后退出，可以接受）。
 
 ## 三、修复
@@ -114,7 +114,7 @@ kill <old blocker>
 | `live-unblock-io.sh` | 现场解堵验证脚本 |
 | `diag-service-boot.sh` | 首次诊断脚本（进程/日志/目录顺序取证） |
 
-**设备脚本全量备份**：`project/m3note-backup/device-scripts-2026-10-15/`
+**设备脚本全量备份**：`<ARTIFACTS>/device-scripts-2026-10-15/`
 ——设备上当前生效的全部 `service.d` + `post-fs-data.d` 脚本与关键日志的**原样拷贝（md5 已逐一核对）**，
 含每个文件的作用说明与恢复命令，见该目录的 `README.md`。
 
@@ -125,4 +125,4 @@ kill <old blocker>
 - io-tuning 本身无风险：删掉 service.d 里的 `m3note-io-tuning.sh` 即回到 Flyme 默认值
 
 ---
-*记录：ZCode · 2026-10-15 20:4x*
+*记录：2026-10-15 20:4x*

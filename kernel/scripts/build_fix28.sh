@@ -13,7 +13,7 @@
 # every in-kernel MTK-style client (mt6311 ext-buck detection failed, cpuhvfs
 # panicked at mt_cpufreq.c:3346).  See i2c总线真相-2026-10-15.md.
 #
-# Usage:  bash <PROJECT_ROOT>/project/kernel/build_fix28.sh
+# Usage:  bash <PROJECT_ROOT>/kernel/scripts/build_fix28.sh
 set -eu
 
 cd <BUILD_ROOT>/k318/android_kernel_m3note-master
@@ -39,8 +39,8 @@ fi
 make KBUILD_BUILD_VERSION=28 -o tools/dct/DrvGen ARCH=arm64 CROSS_COMPILE="$CROSS" \
 	HOSTCFLAGS=-fcommon CC="${CROSS}gcc $INC" -j20 Image.gz > "$LOGDIR/build28b.log" 2>&1
 
-cp arch/arm64/boot/Image.gz <PROJECT_ROOT>/project/kernel/Image.gz-fix28
-cp .config <PROJECT_ROOT>/project/kernel/kernel-config-fix28
+cp arch/arm64/boot/Image.gz <PROJECT_ROOT>/kernel/Image.gz-fix28
+cp .config <PROJECT_ROOT>/kernel/kernel-config-fix28
 
 echo "IRTX_DISABLED_OK  I2C_DRIVER_UNTOUCHED_OK"
 echo BUILD28_DONE

@@ -114,7 +114,7 @@ unlock_erase                           ← 解锁会擦除数据
 **待做**（需要逆向读出那个偏移常量）：
 
 ```
-① 打开 project/m3note-backup/lk-new.img（ARM64）
+① 打开 <ARTIFACTS>/lk-new.img（ARM64）
 ② 搜索字符串 "unlock_allowed_flag_offset"（文件偏移 0x4b488）
 ③ 找交叉引用（ARM64 的 ADRP+ADD 指令对）→ 定位引用它的函数
 ④ 读出偏移常量的实际数值，并确认标志语义（是否 ==1）
@@ -214,7 +214,7 @@ Android 启动失败并自动回落到 recovery。
 
 ## 十、刷内核前的独立复核记录（2026-10-14 复核，全部通过）
 
-结论：**`project/m3note-backup/boot-containers.img` 已可刷**，自检独立重跑全部通过，
+结论：**`<ARTIFACTS>/boot-containers.img` 已可刷**，自检独立重跑全部通过，
 回滚镜像与回滚路径都已确认。
 
 ### 10.1 产物与哈希（sha256）
@@ -298,8 +298,8 @@ adb reboot
 **万一刷完起不来（bootloop）**：按住音量上/电源进 fastboot，然后
 
 ```bash
-fastboot boot "<PROJECT_ROOT>/project/twrp.img"        # 内存启动 TWRP
-adb push "<PROJECT_ROOT>/project/m3note-backup/boot-magisk.img" /tmp/boot-rollback.img
+fastboot boot "<ARTIFACTS>/twrp.img"        # 内存启动 TWRP
+adb push "<ARTIFACTS>/m3note-backup/boot-magisk.img" /tmp/boot-rollback.img
 adb shell "dd if=/tmp/boot-rollback.img of=<boot分区> bs=4096; sync"
 adb reboot
 ```

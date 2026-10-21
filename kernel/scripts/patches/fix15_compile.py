@@ -1,5 +1,5 @@
 from pathlib import Path
-p=Path('<PROJECT_ROOT>/project/kernel/m3note_flash_ioctl.c')
+p=Path('<PROJECT_ROOT>/kernel/m3note_flash_ioctl.c')
 s=p.read_text().replace('#include <linux/module.h>', '#include <linux/module.h>\n#include <linux/platform_device.h>')
 p.write_text(s)
 k=Path('<BUILD_ROOT>/k318/android_kernel_m3note-master')

@@ -52,10 +52,10 @@ KSM **单独编进内核不会自启**：需要运行时往 `/sys/kernel/mm/ksm/
 
 ## 四、回退方法
 
-- 内核回退（#31）：先 `adb reboot bootloader && fastboot boot project/m3note-backup/boot-fix31-test.img`，
-  再 `bash project/kernel/flash-boot.sh project/m3note-backup/boot-fix31-test.img`
+- 内核回退（#31）：先 `adb reboot bootloader && fastboot boot <ARTIFACTS>/boot-fix31-test.img`，
+  再 `bash kernel/scripts/flash-boot.sh <ARTIFACTS>/boot-fix31-test.img`
   （**先 fastboot RAM 启动**，否则启动分区写入不生效——见 T1 第四节）。
-- 本次现场回滚镜像：`project/m3note-backup/boot-live-1792062452.img`（= 刷入前的 #31 内容）。
+- 本次现场回滚镜像：`<ARTIFACTS>/boot-live-1792062452.img`（= 刷入前的 #31 内容）。
 - lz4 若异常：`flash-boot.sh` 回 #31 即可；或在运行中 `echo lzo > /sys/block/zram0/comp_algorithm`（需先 swapoff+reset）。
 
 ## 五、产物
@@ -69,4 +69,4 @@ KSM **单独编进内核不会自启**：需要运行时往 `/sys/kernel/mm/ksm/
 | `flash-boot.sh` | 已知良好镜像列表已追加 `boot-fix32-test.img` |
 
 ---
-*记录：ZCode · 2026-10-15 19:1x*
+*记录：2026-10-15 19:1x*

@@ -26,7 +26,7 @@
 
 上一轮之所以能定位 i2c 真相，是因为拿到了"原机启动镜像"作基准。本轮把这个方法用到底：
 
-1. 从 `project/m3note-backup/boot-orig.img` 解出**原厂 Flyme8 内核**
+1. 从 `<ARTIFACTS>/boot-orig.img` 解出**原厂 Flyme8 内核**
    （`Linux version 3.18.35+ (flyme@mz-builder-9) #1 SMP PREEMPT Wed Sep 23 11:55:40 CST 2020`）。
 2. **`fastboot boot boot-orig.img` 临时启动原厂内核**（RAM 启动，不动启动分区），
    并且发现该镜像里**自带可用的 `su`：`su 0 <命令>` 即 root** → 于是可以在原厂内核上做各种只读对比。
@@ -184,7 +184,7 @@ EN 脚按模式号发脉冲、`CLOSE` 拉低）为模板，要点：
 另外发现 **PS 中断模式下还缺一次上报**：`ltr579_eint_work()` 只调了 `hwmsen_get_interrupt_data()`，
 需要像本树原生 `cm36686.c` 那样**再调 `ps_report_interrupt_data(intr_flag)`**（已补）。
 
-> 教训记录：我最初让助手照 `pa122` 的注册块抄，助手核对后发现 **pa122 那段是死代码**
+> 教训记录：最初参考 `pa122` 的注册块，后来核对发现 **pa122 那段是死代码**
 > （在 `#ifdef OLD_ARCH` 里，而 pa122 只定义 `NEW_ARCH`），于是改以本树**原生在用**的
 > `cm36686-new` 为模板，并按 `alsps.c` 的注册校验（`set_delay/open_report_data/enable_nodata/get_data`
 > 必须非空）确认契约。**不要盲抄兄弟驱动，先确认它真的在执行。**
@@ -239,10 +239,10 @@ EN 脚按模式号发脉冲、`CLOSE` 拉低）为模板，要点：
 - 当时设备以 **#31 固化运行**（写入启动分区、整分区回读校验通过；历史）。
   **⚠ 刷写前提**：启动分区**只在设备由 `fastboot boot`（RAM 启动）时接受写入**，
   从分区正常启动时写入会被静默丢弃（2026-10-15 傍晚复现并定案；详见
-  《系统优化T1-2026-10-15.md》第四节）。通用刷写脚本：`project/kernel/flash-boot.sh`
+  《系统优化T1-2026-10-15.md》第四节）。通用刷写脚本：`kernel/scripts/flash-boot.sh`
   （基线校验→现场 dump 作回滚→写入→drop_caches 后回读→自动回滚→重启确认）。
   回退示例：先 `fastboot boot boot-fix30-test.img`，再 `bash flash-boot.sh .../boot-fix30-test.img`。
 
 ---
-*记录：ZCode · 2026-10-15 16:4x · 方法：与厂商内核逐项对照（RAM 启动原厂镜像 + `su 0` 取证）*
+*记录：2026-10-15 16:4x · 方法：与厂商内核逐项对照（RAM 启动原厂镜像 + `su 0` 取证）*
 
