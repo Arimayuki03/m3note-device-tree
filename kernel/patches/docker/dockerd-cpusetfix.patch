@@ -1,0 +1,27 @@
+--- a/daemon/daemon_unix.go
++++ b/daemon/daemon_unix.go
+@@ -648,6 +648,24 @@
+ 		return nil, nil
+ 	}
+ 	sysInfo := daemon.RawSysInfo()
++	// Android/MTK hotplug changes the root cpuset after daemon startup.
++	// RawSysInfo is cached for the daemon lifetime, so explicit affinity
++	// requests must be checked against the current controller contents.
++	if hostConfig.CpusetCpus != "" || hostConfig.CpusetMems != "" {
++		sysInfo = getSysInfo(&daemonCfg.Config)
++		// On legacy cpuset, hot-unplug permanently shrinks /docker's mask.
++		// This installation owns the default cgroupfs /docker parent; keep
++		// it aligned with the current root before applying a child mask.
++		// Explicitly configured cgroup parents retain their own constraints.
++		if hostConfig.CgroupParent == "" && daemonCfg.CgroupParent == "" {
++			parent := "/sys/fs/cgroup/cpuset/docker/cpuset.cpus"
++			if _, err := os.Stat(parent); err == nil {
++				if err := os.WriteFile(parent, []byte(sysInfo.Cpus), 0644); err != nil {
++					return nil, errors.Wrap(err, "refresh Android Docker cpuset parent")
++				}
++			}
++		}
++	}
+ 
+ 	w, err := verifyPlatformContainerResources(&hostConfig.Resources, sysInfo, update)
+ 

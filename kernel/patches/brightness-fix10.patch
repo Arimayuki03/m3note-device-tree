@@ -1,0 +1,18 @@
+--- <BUILD_ROOT>/fix-20261015/ddp_pwm.before.c	2026-10-15 01:16:20.238046971 +0800
++++ drivers/misc/mediatek/video/common/aal20/ddp_pwm.c	2026-10-15 01:16:20.238143191 +0800
+@@ -555,6 +555,7 @@
+ 		enable_clock(MT_CG_PERI_DISP_PWM, "DISP_PWM");
+ #endif
+ #else /* Common Clock Framework */
++		ddp_clk_enable(MUX_PWM);
+ 		ddp_clk_enable(DISP_PWM);
+ #endif
+ 	}
+@@ -591,6 +592,7 @@
+ #endif
+ #else /* Common Clock Framework */
+ 		ddp_clk_disable(DISP_PWM);
++		ddp_clk_disable(MUX_PWM);
+ #endif
+ 	}
+ #endif

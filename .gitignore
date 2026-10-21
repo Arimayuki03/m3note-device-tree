@@ -1,0 +1,17 @@
+# local artefacts (never publish these)
+*.img
+*.bin
+*.apk
+*.zip
+*.tar
+*.tar.gz
+*.7z
+*.msi
+*.log
+*.pyc
+__pycache__/
+.mimosa/
+.zcode/
+.v2c/
+out/
+local/

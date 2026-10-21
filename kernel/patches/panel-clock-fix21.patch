@@ -1,0 +1,12 @@
+--- <BUILD_ROOT>/fix-20261015/pre21/drivers/misc/mediatek/lcm/r63350_fhd_dsi_vdo_tcl_sharp_nt50358/r63350_fhd_dsi_vdo_tcl_sharp_nt50358.c	2026-10-14 21:30:23.498643603 +0800
++++ drivers/misc/mediatek/lcm/r63350_fhd_dsi_vdo_tcl_sharp_nt50358/r63350_fhd_dsi_vdo_tcl_sharp_nt50358.c	2026-10-15 04:21:53.218985159 +0800
+@@ -301,7 +301,8 @@
+ #if (LCM_DSI_CMD_MODE)
+ 	params->dsi.PLL_CLOCK = 500;	/* this value must be in MTK suggested table */
+ #else
+-	params->dsi.PLL_CLOCK = 450;	/* this value must be in MTK suggested table */
++	/* 450 MHz leaves this panel at ~54 Hz; 500 MHz was measured at ~60 Hz. */
++	params->dsi.PLL_CLOCK = 500;
+ #endif
+ #else
+ 	params->dsi.pll_div1 = 0;

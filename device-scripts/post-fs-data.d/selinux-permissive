@@ -1,0 +1,5 @@
+#!/system/bin/sh
+# Magisk post-fs-data.d：尽早将 SELinux 设为 permissive
+# 原因：自编译内核（99degree/魅族源码）的 SELinux 实现较旧，
+# 强制模式下与 Flyme 8 策略不兼容，导致应用启动/手电筒/背光等被拒。
+setenforce 0

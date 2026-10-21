@@ -1,0 +1,48 @@
+--- <BUILD_ROOT>/fix-20261015/pre21/drivers/misc/mediatek/video/mt6755/primary_display.c	2018-09-02 12:11:34.000000000 +0800
++++ drivers/misc/mediatek/video/mt6755/primary_display.c	2026-10-15 04:21:53.219421810 +0800
+@@ -3116,6 +3116,7 @@
+ 	int use_cmdq = disp_helper_get_option(DISP_OPT_USE_CMDQ);
+ 	struct ddp_io_golden_setting_arg gset_arg;
+ 	disp_ddp_path_config *data_config = NULL;
++	bool m3note_60hz = false;
+ 
+ 	DISPMSG("primary_display_init begin lcm=%s, inited=%d\n", lcm_name, is_lcm_inited);
+ 
+@@ -3154,6 +3155,19 @@
+ 		goto done;
+ 	}
+ 
++	/* LK's combined videolfb tag carries 5419 for this panel. Use the
++	 * nominal rate only together with the tested 500 MHz video timing. */
++	m3note_60hz = pgc->plcm->drv &&
++		!strcmp(pgc->plcm->drv->name,
++			"r63350_fhd_dsi_vdo_tcl_sharp_nt50358_drv") &&
++		lcm_param->type == LCM_TYPE_DSI &&
++		lcm_param->dsi.mode == SYNC_PULSE_VDO_MODE &&
++		lcm_param->dsi.PLL_CLOCK == 500;
++	if (m3note_60hz) {
++		DISPMSG("m3note panel: LK fps=%u, nominal fps=6000, PLL=500 MHz\n", lcm_fps);
++		lcm_fps = 6000;
++	}
++
+ 	update_primary_intferface_module();
+ 
+ 	if (use_cmdq) {
+@@ -3406,6 +3420,17 @@
+ 	primary_display_diagnose();
+ 	dst_module = _get_dst_module_by_lcm(pgc->plcm);
+ 	_primary_path_unlock(__func__);
++	if (ret == DISP_STATUS_OK && m3note_60hz) {
++		u32 clock = 500;
++
++		/* LK already enabled MIPITX at 450 MHz; normal init preserves it.
++		 * Reuse the tested PanelMaster stop/config/start transaction once,
++		 * before HWC queries the mode. The panel params also cover resume. */
++		PanelMaster_set_PM_enable(1);
++		ret = Panel_Master_dsi_config_entry("PM_CLK", &clock);
++		PanelMaster_set_PM_enable(0);
++		DISPMSG("m3note panel: 60 Hz handoff ret=%d\n", ret);
++	}
+ 	return ret;
+ }
+ 

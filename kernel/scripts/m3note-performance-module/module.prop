@@ -1,0 +1,6 @@
+id=m3note.performance
+name=M3 Note Performance Control
+version=1.0
+versionCode=1
+author=Codex
+description=Keep all CPU cores online and disable MTK software thermal policy

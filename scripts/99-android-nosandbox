@@ -1,0 +1,5 @@
+// 魅蓝 note3 Android chroot 专用配置
+// 原因：apt 下载时会降权到 _apt (uid 42)，而 Android 的 UID 路由/防火墙策略
+// 不给该 uid 放行 DNS，导致 "Temporary failure resolving"。
+// 让 apt 的下载方法以 root 运行即可绕过；软件包 GPG 签名校验不受影响。
+APT::Sandbox::User "root";

@@ -1,0 +1,146 @@
+--- a/net/netfilter/xt_qtaguid.c
++++ b/net/netfilter/xt_qtaguid.c
+@@ -24,6 +24,7 @@
+ #include <linux/skbuff.h>
+ #include <linux/workqueue.h>
+ #include <net/addrconf.h>
++#include <net/net_namespace.h>
+ #include <net/sock.h>
+ #include <net/tcp.h>
+ #include <net/udp.h>
+@@ -656,6 +657,17 @@
+ 	iface_entry = NULL;
+ done:
+ 	return iface_entry;
++}
++
++/*
++ * Android exposes one global, name-keyed interface table in init_net.proc_net.
++ * Container interfaces must not replace entries belonging to Android or each
++ * other. Notifications while moving a device out of init_net are delivered
++ * before dev_net() changes, so its final snapshot is still accounted for.
++ */
++static bool qtaguid_iface_in_init_net(const struct net_device *dev)
++{
++	return dev && net_eq(dev_net(dev), &init_net);
+ }
+ 
+ /* This is for fmt2 only */
+@@ -955,6 +967,9 @@
+ 		return;
+ 	}
+ 
++	if (!qtaguid_iface_in_init_net(net_dev))
++		return;
++
+ 	ifname = net_dev->name;
+ 	if (!ifa) {
+ 		in_dev = in_dev_get(net_dev);
+@@ -1020,6 +1035,9 @@
+ 		pr_err("qtaguid: iface_stat: create6(): no net dev!\n");
+ 		return;
+ 	}
++	if (!qtaguid_iface_in_init_net(net_dev))
++		return;
++
+ 	ifname = net_dev->name;
+ 
+ 	in_dev = in_dev_get(net_dev);
+@@ -1127,50 +1145,37 @@
+  */
+ static void iface_stat_update(struct net_device *net_dev, bool stash_only)
+ {
+-	struct rtnl_link_stats64 dev_stats, *stats;
++	struct rtnl_link_stats64 dev_stats, *stats = NULL;
+ 	struct iface_stat *entry;
+ 
+-	stats = dev_get_stats(net_dev, &dev_stats);
++	if (!qtaguid_iface_in_init_net(net_dev))
++		return;
++
+ 	spin_lock_bh(&iface_stat_list_lock);
+-	entry = get_iface_entry(net_dev->name);
+-	if (entry == NULL) {
+-		IF_DEBUG("qtaguid: iface_stat: update(%s): not tracked\n",
+-			 net_dev->name);
+-		spin_unlock_bh(&iface_stat_list_lock);
+-		return;
+-	}
+-
+-	IF_DEBUG("qtaguid: %s(%s): entry=%p\n", __func__,
+-		 net_dev->name, entry);
+-	if (!entry->active) {
+-		IF_DEBUG("qtaguid: %s(%s): already disabled\n", __func__,
+-			 net_dev->name);
+-		spin_unlock_bh(&iface_stat_list_lock);
+-		return;
+-	}
+-
+-	if (stash_only) {
+-		entry->last_known[IFS_TX].bytes = stats->tx_bytes;
+-		entry->last_known[IFS_TX].packets = stats->tx_packets;
+-		entry->last_known[IFS_RX].bytes = stats->rx_bytes;
+-		entry->last_known[IFS_RX].packets = stats->rx_packets;
+-		entry->last_known_valid = true;
+-		IF_DEBUG("qtaguid: %s(%s): "
+-			 "dev stats stashed rx/tx=%llu/%llu\n", __func__,
+-			 net_dev->name, stats->rx_bytes, stats->tx_bytes);
+-		spin_unlock_bh(&iface_stat_list_lock);
+-		return;
+-	}
+-	entry->totals_via_dev[IFS_TX].bytes += stats->tx_bytes;
+-	entry->totals_via_dev[IFS_TX].packets += stats->tx_packets;
+-	entry->totals_via_dev[IFS_RX].bytes += stats->rx_bytes;
+-	entry->totals_via_dev[IFS_RX].packets += stats->rx_packets;
+-	/* We don't need the last_known[] anymore */
+-	entry->last_known_valid = false;
+-	_iface_stat_set_active(entry, net_dev, false);
+-	IF_DEBUG("qtaguid: %s(%s): "
+-		 "disable tracking. rx/tx=%llu/%llu\n", __func__,
+-		 net_dev->name, stats->rx_bytes, stats->tx_bytes);
++	/* Names may change before UNREGISTER, or be reused in another netns.
++	 * Retire every live record for this exact object, including records
++	 * created under earlier names. No device reference may outlive it.
++	 */
++	list_for_each_entry(entry, &iface_stat_list, list) {
++		if (!entry->active || entry->net_dev != net_dev)
++			continue;
++		if (!stats)
++			stats = dev_get_stats(net_dev, &dev_stats);
++		if (stash_only) {
++			entry->last_known[IFS_TX].bytes = stats->tx_bytes;
++			entry->last_known[IFS_TX].packets = stats->tx_packets;
++			entry->last_known[IFS_RX].bytes = stats->rx_bytes;
++			entry->last_known[IFS_RX].packets = stats->rx_packets;
++			entry->last_known_valid = true;
++			continue;
++		}
++		entry->totals_via_dev[IFS_TX].bytes += stats->tx_bytes;
++		entry->totals_via_dev[IFS_TX].packets += stats->tx_packets;
++		entry->totals_via_dev[IFS_RX].bytes += stats->rx_bytes;
++		entry->totals_via_dev[IFS_RX].packets += stats->rx_packets;
++		entry->last_known_valid = false;
++		_iface_stat_set_active(entry, net_dev, false);
++	}
+ 	spin_unlock_bh(&iface_stat_list_lock);
+ }
+ 
+@@ -1218,6 +1223,9 @@
+ 			 par->hooknum, el_dev->name, el_dev->type,
+ 			 par->family, proto);
+ 	}
++
++	if (!qtaguid_iface_in_init_net(el_dev))
++		return;
+ 
+ 	spin_lock_bh(&iface_stat_list_lock);
+ 	entry = get_iface_entry(el_dev->name);
+@@ -1640,6 +1648,8 @@
+ 		pr_info("qtaguid[%d]: no dev->name?!!\n", par->hooknum);
+ 	} else {
+ 		int proto = ipx_proto(skb, par);
++		if (!qtaguid_iface_in_init_net(el_dev))
++			return;
+ 		MT_DEBUG("qtaguid[%d]: dev name=%s type=%d fam=%d proto=%d\n",
+ 			 par->hooknum, el_dev->name, el_dev->type,
+ 			 par->family, proto);

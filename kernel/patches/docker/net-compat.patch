@@ -1,0 +1,27 @@
+--- a/net/ipv4/route.c
++++ b/net/ipv4/route.c
+@@ -92,6 +92,9 @@
+ #include <linux/jhash.h>
+ #include <net/dst.h>
+ #include <net/net_namespace.h>
++
++/* Upstream route UID ABI; Android init_net retains RTA_UID=18. */
++#define RTA_UID_UPSTREAM 25
+ #include <net/protocol.h>
+ #include <net/ip.h>
+ #include <net/route.h>
+@@ -2355,8 +2358,13 @@
+ 	    nla_put_u32(skb, RTA_MARK, fl4->flowi4_mark))
+ 		goto nla_put_failure;
+ 
++	/* Android 3.18 assigned RTA_UID=18, which upstream now uses for
++	 * RTA_VIA. Modern container netlink clients cannot decode a 4-byte UID
++	 * as RTA_VIA. Preserve netd's original ABI in init_net and emit the
++	 * upstream UID attribute (25) only in isolated network namespaces.
++	 */
+ 	if (!uid_eq(fl4->flowi4_uid, INVALID_UID) &&
+-	    nla_put_u32(skb, RTA_UID,
++	    nla_put_u32(skb, net_eq(net, &init_net) ? RTA_UID : RTA_UID_UPSTREAM,
+ 			from_kuid_munged(current_user_ns(), fl4->flowi4_uid)))
+ 		goto nla_put_failure;
+ 

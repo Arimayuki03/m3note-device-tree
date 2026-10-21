@@ -1,0 +1,49 @@
+--- a/libcontainer/nsenter/nsexec.c
++++ b/libcontainer/nsenter/nsexec.c
+@@ -569,7 +569,7 @@
+ 
+ void join_namespaces(char *nslist)
+ {
+-	int num = 0, i;
++	int num = 0, i, rootfd = -1;
+ 	char *saveptr = NULL;
+ 	char *namespace = strtok_r(nslist, ",", &saveptr);
+ 	struct namespace_t {
+@@ -607,6 +607,24 @@
+ 		if (fd < 0)
+ 			bail("failed to open %s", path);
+ 
++		/* Android starts runc inside /data/ubuntu. With --no-pivot the
++		 * namespace root is still rootfs, while the container process has
++		 * a narrower chroot. setns alone restores the namespace root, so
++		 * keep the target process root open before joining namespaces.
++		 */
++		if (!strcmp(namespace, "mnt")) {
++			char rootpath[PATH_MAX];
++			int target;
++			char tail;
++			if (sscanf(path, "/proc/%d/ns/mnt%c", &target, &tail) != 1 || target <= 0)
++				bail("unexpected mount namespace path: %s", path);
++			if (snprintf(rootpath, sizeof(rootpath), "/proc/%d/root", target) >= sizeof(rootpath))
++				bail("target root path too long");
++			rootfd = open(rootpath, O_RDONLY | O_DIRECTORY | O_CLOEXEC);
++			if (rootfd < 0)
++				bail("failed to open target process root");
++		}
++
+ 		ns->fd = fd;
+ 		strncpy(ns->type, namespace, PATH_MAX - 1);
+ 		strncpy(ns->path, path, PATH_MAX - 1);
+@@ -629,6 +647,12 @@
+ 			bail("failed to setns into %s namespace", ns->type);
+ 
+ 		close(ns->fd);
++	}
++
++	if (rootfd >= 0) {
++		if (fchdir(rootfd) < 0 || chroot(".") < 0 || chdir("/") < 0)
++			bail("failed to enter target process root");
++		close(rootfd);
+ 	}
+ 
+ 	free(namespaces);

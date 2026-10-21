@@ -1,0 +1,11 @@
+@echo off
+rem Connect to the Linux chroot on the phone.
+rem Set M3NOTE_HOST (and optionally M3NOTE_USER) in your environment first.
+setlocal
+if "%M3NOTE_HOST%"=="" (
+  echo Set M3NOTE_HOST to the phone LAN address, e.g. 192.0.2.10
+  exit /b 1
+)
+if "%M3NOTE_USER%"=="" set M3NOTE_USER=root
+set KEY=%USERPROFILE%\.ssh\id_ed25519_m3note
+ssh -i "%KEY%" -o StrictHostKeyChecking=accept-new -o LogLevel=ERROR %M3NOTE_USER%@%M3NOTE_HOST% %*

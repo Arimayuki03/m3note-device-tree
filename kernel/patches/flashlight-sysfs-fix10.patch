@@ -1,0 +1,77 @@
+--- <BUILD_ROOT>/fix-20261015/kd_flashlightlist.before.c	2026-10-15 01:16:20.235630633 +0800
++++ drivers/misc/mediatek/flashlight/src/mt6755/kd_flashlightlist.c	2026-10-15 01:18:39.378012400 +0800
+@@ -761,6 +761,49 @@
+ static dev_t flashlight_devno;
+ static struct cdev *g_pFlash_CharDrv;
+ 
++/* Flyme legacy torch ABI. Negative values turn a channel off; 0..5 are levels. */
++extern int m3note_torch_set(int channel, int level);
++static int m3note_torch_level[2] = { -1, -1 };
++static DEFINE_MUTEX(m3note_torch_sysfs_lock);
++
++static ssize_t m3note_torch_show(struct device *dev,
++		struct device_attribute *attr, char *buf)
++{
++	int channel = !strcmp(attr->attr.name, "flash2");
++	return scnprintf(buf, PAGE_SIZE, "%d\n", m3note_torch_level[channel]);
++}
++
++static ssize_t m3note_torch_store(struct device *dev,
++		struct device_attribute *attr, const char *buf, size_t count)
++{
++	int channel = !strcmp(attr->attr.name, "flash2");
++	int level, ret;
++
++	ret = kstrtoint(buf, 0, &level);
++	if (ret)
++		return ret;
++	level = clamp(level, -1, 5);
++	mutex_lock(&m3note_torch_sysfs_lock);
++	ret = m3note_torch_set(channel, level);
++	if (!ret)
++		m3note_torch_level[channel] = level;
++	mutex_unlock(&m3note_torch_sysfs_lock);
++	if (ret)
++		return ret;
++	return count;
++}
++
++static struct device_attribute dev_attr_flash1 = { .attr = { .name = "flash1", .mode = 0666 }, .show = m3note_torch_show, .store = m3note_torch_store };
++static struct device_attribute dev_attr_flash2 = { .attr = { .name = "flash2", .mode = 0666 }, .show = m3note_torch_show, .store = m3note_torch_store };
++static struct attribute *m3note_torch_attrs[] = {
++	&dev_attr_flash1.attr,
++	&dev_attr_flash2.attr,
++	NULL,
++};
++static const struct attribute_group m3note_torch_group = {
++	.attrs = m3note_torch_attrs,
++};
++
+ /* ======================================================================== */
+ #define ALLOC_DEVNO
+ static int flashlight_probe(struct platform_device *dev)
+@@ -815,11 +858,15 @@
+ 
+ 	flashlight_device =
+ 	    device_create(flashlight_class, NULL, flashlight_devno, NULL, FLASHLIGHT_DEVNAME);
+-	if (NULL == flashlight_device) {
++	if (IS_ERR(flashlight_device)) {
+ 		logI("[flashlight_probe] device_create fail ~");
+ 		goto flashlight_probe_error;
+ 	}
+ 
++	ret = sysfs_create_group(&flashlight_device->kobj, &m3note_torch_group);
++	if (ret)
++		return ret;
++
+ 	/* initialize members */
+ 	spin_lock_init(&flashlight_private.lock);
+ 	init_waitqueue_head(&flashlight_private.read_wait);
+@@ -856,6 +903,7 @@
+ #else
+ 	unregister_chrdev(MAJOR(flashlight_devno), FLASHLIGHT_DEVNAME);
+ #endif
++	sysfs_remove_group(&flashlight_device->kobj, &m3note_torch_group);
+ 	device_destroy(flashlight_class, flashlight_devno);
+ 	class_destroy(flashlight_class);
+ 

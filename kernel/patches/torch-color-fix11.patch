@@ -1,0 +1,63 @@
+--- <BUILD_ROOT>/fix-20261015/m3note_torch_compat.fix10.c	2026-10-15 01:28:13.819234560 +0800
++++ <BUILD_ROOT>/k318/android_kernel_m3note-master/drivers/misc/mediatek/flashlight/src/mt6755/m3note_torch_compat.c	2026-10-15 01:28:13.825982413 +0800
+@@ -39,7 +39,8 @@
+ int m3note_torch_set(int channel, int level)
+ {
+ 	static const u8 duty[] = { 16, 35, 53, 70, 89, 106 };
+-	int ret, enable, old_level;
++	int next_level[2];
++	int ret, enable;
+ 
+ 	if (channel < 0 || channel > 1 || level < -1 || level > 5)
+ 		return -EINVAL;
+@@ -48,7 +49,9 @@
+ 		ret = -ENODEV;
+ 		goto out;
+ 	}
+-	old_level = torch_level[channel];
++	next_level[0] = torch_level[0];
++	next_level[1] = torch_level[1];
++	next_level[channel] = level;
+ 	ret = torch_gpio(TORCH_HWEN, 1);
+ 	if (ret)
+ 		goto out;
+@@ -59,27 +62,32 @@
+ 	ret = torch_gpio(TORCH_PIN, 1);
+ 	if (ret)
+ 		goto fail;
+-	ret = torch_write(channel ? 0x06 : 0x05, level < 0 ? 0 : duty[level]);
++	/* The board wires high CCT (flash1) to LED2 and low CCT to LED1.
++	 * Replay both currents after HWEN, which may have reset the chip.
++	 */
++	ret = torch_write(0x06, next_level[0] < 0 ? 0 : duty[next_level[0]]);
++	if (ret < 0)
++		goto fail;
++	ret = torch_write(0x05, next_level[1] < 0 ? 0 : duty[next_level[1]]);
+ 	if (ret < 0)
+ 		goto fail;
+ 	ret = torch_write(0x08, 0x1f);
+ 	if (ret < 0)
+ 		goto fail;
+-	torch_level[channel] = level;
+-	enable = (torch_level[0] >= 0 ? 1 : 0) | (torch_level[1] >= 0 ? 2 : 0);
++	enable = (next_level[0] >= 0 ? 2 : 0) | (next_level[1] >= 0 ? 1 : 0);
+ 	/* Clear external flash-enable bits and preserve the reserved bit. */
+ 	ret = i2c_smbus_read_byte_data(m3note_torch_client, 0x01);
+ 	if (ret < 0)
+-		goto restore;
++		goto fail;
+ 	ret = torch_write(0x01, (ret & 0x80) | (enable ? 0x08 | enable : 0));
+ 	if (ret < 0)
+-		goto restore;
++		goto fail;
++	torch_level[0] = next_level[0];
++	torch_level[1] = next_level[1];
+ 	if (!enable)
+ 		torch_gpio(TORCH_HWEN, 0);
+ 	ret = 0;
+ 	goto out;
+-restore:
+-	torch_level[channel] = old_level;
+ fail:
+ 	torch_write(0x01, 0);
+ 	torch_gpio(TORCH_HWEN, 0);

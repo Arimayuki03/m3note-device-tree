@@ -1,0 +1,22 @@
+--- <BUILD_ROOT>/fix-20261015/gt1x_tpd.before.c	2026-10-15 01:16:20.237022878 +0800
++++ drivers/input/touchscreen/mediatek/GT1151/gt1x_tpd.c	2026-10-15 01:16:20.237089018 +0800
+@@ -733,10 +733,7 @@
+ 	input_mt_slot(tpd->dev, id);
+ 	input_report_abs(tpd->dev, ABS_MT_TRACKING_ID, -1);
+ #else
+-	/* 释放事件必须同时上报 tracking_id = -1：
+-	 * 设备已声明 ABS_MT_TRACKING_ID（协议B），Android InputReader 依赖
+-	 * 该 -1 判定抬手；只发 BTN_TOUCH=0 会导致点击永不完成（长按/滑动正常但点击失效）*/
+-	input_report_abs(tpd->dev, ABS_MT_TRACKING_ID, -1);
++	/* Protocol A: an empty MT frame releases all contacts. */
+ 	input_report_key(tpd->dev, BTN_TOUCH, 0);
+ 	input_mt_sync(tpd->dev);
+ #endif
+@@ -996,6 +993,7 @@
+ 		return -1;
+ 	}
+ 	input_set_abs_params(tpd->dev, ABS_MT_TRACKING_ID, 0, (GTP_MAX_TOUCH - 1), 0, 0);
++	input_set_abs_params(tpd->dev, ABS_MT_PRESSURE, 0, 255, 0, 0);
+ 	if (tpd_dts_data.use_tpd_button) {
+ 		/*initialize tpd button data*/
+ 		tpd_button_setting(tpd_dts_data.tpd_key_num, tpd_dts_data.tpd_key_local,
